@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Visibility Quiz | Aumana Consulting</title>
+  <meta name="description" content="Find out if your business is invisible to AI search. Takes 60 seconds." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css" />
+  <style>
+    :root {
+      --bg: #080604;
+      --bg-card: #111009;
+      --bg-elev: rgba(255,255,255,0.04);
+      --text: #ffffff;
+      --text-secondary: rgba(255,255,255,0.55);
+      --text-muted: rgba(255,255,255,0.3);
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.14);
+      --orange: #ff5c1a;
+      --sans: "Space Grotesk", system-ui, sans-serif;
+      --radius: 12px;
+      --ease: cubic-bezier(0.22,1,0.36,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse 120% 45% at 50% -5%, rgba(255,100,20,0.45) 0%, rgba(200,60,0,0.15) 35%, transparent 65%);
+    }
+
+    .header {
+      position: relative; z-index: 10;
+      padding: 1.25rem 2rem;
+    }
+    .header a { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--text); }
+    .brand-img { width: 30px; height: 30px; object-fit: contain; filter: brightness(0) invert(1); }
+    .brand-word { font-size: 1rem; font-weight: 600; letter-spacing: 0.01em; }
+
+    main {
+      flex: 1; position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 1.5rem 1.25rem 4rem;
+    }
+
+    .quiz-card {
+      width: 100%; max-width: 580px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 20px;
+      padding: 2.25rem 2rem;
+    }
+
+    /* Progress */
+    .progress-wrap { margin-bottom: 1.75rem; }
+    .progress-track { display: flex; gap: 5px; margin-bottom: 0.5rem; }
+    .progress-track span {
+      flex: 1; height: 3px; border-radius: 99px;
+      background: var(--border);
+      transition: background 0.4s var(--ease);
+    }
+    .progress-track span.done { background: var(--orange); }
+    .progress-track span.active { background: rgba(255,92,26,0.45); }
+    .progress-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+
+    .q-text { font-size: 1.35rem; font-weight: 700; line-height: 1.3; margin-bottom: 1.25rem; }
+
+    /* Choice grid */
+    .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+    .choices-grid.single-col { grid-template-columns: 1fr; }
+
+    .choice-btn {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: var(--bg-elev);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text);
+      font-family: var(--sans); font-size: 0.9rem; font-weight: 500;
+      line-height: 1.35;
+      transition: border-color 0.18s, background 0.18s, transform 0.15s var(--ease);
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    .choice-btn:hover { border-color: rgba(255,92,26,0.4); transform: translateY(-1px); }
+    .choice-btn.selected {
+      border-color: var(--orange);
+      background: rgba(255,92,26,0.1);
+    }
+    .choice-btn.selected::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(255,92,26,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Icon wrapper */
+    .choice-icon {
+      width: 34px; height: 34px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      transition: background 0.18s, border-color 0.18s;
+    }
+    .choice-btn.selected .choice-icon {
+      background: rgba(255,92,26,0.15);
+      border-color: rgba(255,92,26,0.4);
+    }
+    .choice-icon svg {
+      width: 18px; height: 18px;
+      stroke: rgba(255,255,255,0.55);
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.18s;
+    }
+    .choice-btn.selected .choice-icon svg { stroke: var(--orange); }
+
+    /* Text fields */
+    .field-wrap { margin-bottom: 0.85rem; }
+    .field-wrap label { display: block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.4rem; }
+    .field-wrap input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--sans); font-size: 1rem;
+      padding: 0.75rem 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field-wrap input:focus { border-color: var(--orange); }
+    .field-wrap input::placeholder { color: var(--text-muted); }
+    .field-wrap input.error { border-color: rgba(255,80,80,0.7); }
+
+    .nav-row { display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem; }
+    .btn-submit {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+      padding: 0.85rem 1.75rem;
+      border-radius: var(--radius);
+      font-family: var(--sans); font-size: 0.875rem; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      cursor: pointer; border: none;
+      background: var(--orange); color: #fff;
+      box-shadow: 0 0 22px rgba(255,92,26,0.45), 0 4px 14px rgba(255,92,26,0.3);
+      transition: transform 0.18s var(--ease), box-shadow 0.18s;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(255,92,26,0.65), 0 6px 22px rgba(255,92,26,0.4); }
+    .btn-back { background: none; border: none; font-family: var(--sans); font-size: 0.82rem; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+    .btn-back:hover { color: var(--text); }
+
+    /* Step transitions */
+    .step { display: none; animation: fadeUp 0.3s var(--ease) both; }
+    .step.active { display: block; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Thank you */
+    .thankyou { text-align: center; }
+    .ty-icon {
+      width: 54px; height: 54px; border-radius: 50%;
+      background: rgba(255,92,26,0.12);
+      border: 1.5px solid var(--orange);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+    .ty-icon svg { width: 24px; height: 24px; stroke: var(--orange); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .thankyou h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .thankyou p { color: var(--text-secondary); font-size: 0.9rem; max-width: 360px; margin: 0 auto 1.75rem; }
+    .btn-calendly {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.95rem 2rem;
+      background: var(--orange); color: #fff;
+      border-radius: var(--radius);
+      font-family: var(--sans); font-size: 0.9rem; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      text-decoration: none;
+      box-shadow: 0 0 28px rgba(255,92,26,0.5), 0 4px 18px rgba(255,92,26,0.35);
+      transition: transform 0.18s var(--ease), box-shadow 0.18s;
+    }
+    .btn-calendly:hover { transform: translateY(-2px); box-shadow: 0 0 42px rgba(255,92,26,0.7), 0 8px 28px rgba(255,92,26,0.45); }
+
+    .summary { margin-top: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.85rem 1rem; text-align: left; }
+    .summary-row { padding: 0.4rem 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.15rem; }
+    .summary-row:last-child { border: none; }
+    .summary-row strong { color: var(--text); font-weight: 600; }
+
+    @media (max-width: 480px) {
+      .quiz-card { padding: 1.5rem 1.1rem; }
+      .q-text { font-size: 1.15rem; }
+      .choices-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="index.html">
+      <img src="logo.png" class="brand-img" alt="Aumana" />
+      <span class="brand-word">Aumana</span>
+    </a>
+  </header>
+
+  <main>
+    <div class="quiz-card">
+
+      <div class="progress-wrap">
+        <div class="progress-track">
+          <span id="p1" class="active"></span>
+          <span id="p2"></span>
+          <span id="p3"></span>
+          <span id="p4"></span>
+        </div>
+        <div class="progress-label" id="progressLabel">Step 1 of 4</div>
+      </div>
+
+      <form name="quiz" data-netlify="true" netlify-honeypot="bot-field" id="quizForm" method="POST">
+        <input type="hidden" name="form-name" value="quiz" />
+        <input type="hidden" name="bot-field" />
+        <input type="hidden" name="business_type"  id="bizTypeVal" />
+        <input type="hidden" name="traffic_issue"   id="trafficVal" />
+        <input type="hidden" name="google_ranking"  id="googleVal" />
+
+        <!-- STEP 1 -->
+        <div class="step active" id="step1">
+          <p class="q-text">What type of business do you run?</p>
+          <div class="choices-grid" id="bizChoices">
+
+            <button type="button" class="choice-btn" data-val="Med Spa / Aesthetics">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.2 4.2l2.1 2.1M13.7 13.7l2.1 2.1M4.2 15.8l2.1-2.1M13.7 6.3l2.1-2.1"/><circle cx="10" cy="10" r="3"/></svg></span>
+              Med Spa / Aesthetics
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Dental Office">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M7 3c-1.5 0-3 1-3 3 0 2 1 3 1 5s-.5 4 1.5 6c1 1 1.5-1 3-1s2 2 3 1c2-2 1.5-4 1.5-6s1-3 1-5c0-2-1.5-3-3-3-1 0-2 1-3 1S8 3 7 3z"/></svg></span>
+              Dental Office
+            </button>
+
+            <button type="button" class="choice-btn" data-val="HVAC / Plumbing">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M14.5 2.5a2 2 0 0 1 0 2.8L6 13.8 2.5 17l.7-3.5 8.5-8.5a2 2 0 0 1 2.8 0z"/><path d="M12.5 4.5l3 3"/></svg></span>
+              HVAC / Plumbing
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Law Firm">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M10 2v16M6 18h8"/><path d="M4 7l3-3 3 3M10 4l3 3 3-3"/><path d="M4 11l3 3M13 11l3 3"/><path d="M4 14h6M10 14h6"/></svg></span>
+              Law Firm
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Restaurant / Café">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M6 2v5c0 1.7 1.3 3 3 3s3-1.3 3-3V2"/><path d="M9 10v8M6 18h6"/><path d="M15 2v16"/></svg></span>
+              Restaurant / Café
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Real Estate">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M3 9.5L10 3l7 6.5"/><path d="M5 9v9h10V9"/><path d="M8 18v-5h4v5"/></svg></span>
+              Real Estate
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Fitness / Gym">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M2 10h3M15 10h3M5 7v6M15 7v6M7 9v4M13 9v4M8 10h4" stroke-width="1.8"/><rect x="4" y="7" width="2" height="6" rx="1"/><rect x="14" y="7" width="2" height="6" rx="1"/><rect x="6.5" y="9" width="7" height="4" rx="1"/></svg></span>
+              Fitness / Gym
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Other">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 10h.01M7 8.5C7.4 7.4 8.6 6.5 10 6.5c1.7 0 3 1.1 3 2.5 0 2-3 2.5-3 4.5"/></svg></span>
+              Other
+            </button>
+
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step" id="step2">
+          <p class="q-text">What's your biggest issue with getting traffic?</p>
+          <div class="choices-grid single-col" id="trafficChoices">
+
+            <button type="button" class="choice-btn" data-val="Not showing up when people search for my service">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M17 17l-3.5-3.5"/><path d="M6.5 8.5h4M8.5 6.5v4" stroke-width="1.4"/><path d="M6 6l5 5" stroke-width="1.4"/></svg></span>
+              Not showing up when people search for my service
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Competitors keep outranking me">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M4 14l4-4 3 3 5-7"/><path d="M14 6h3v3"/></svg></span>
+              Competitors keep outranking me
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Getting visitors but no calls or bookings">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M6.5 3.5h7c.6 0 1 .4 1 1v11c0 .6-.4 1-1 1h-7c-.6 0-1-.4-1-1v-11c0-.6.4-1 1-1z"/><path d="M9 5.5h2M10 14.5v.01"/><path d="M7.5 9l5 3M12.5 9l-5 3"/></svg></span>
+              Getting visitors but no calls or bookings
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Barely getting any online traffic at all">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><path d="M3 17c0-4.4 3.1-8 7-8s7 3.6 7 8" stroke-linecap="round"/><path d="M6 17c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke-linecap="round" opacity=".5"/><path d="M9 17h2" stroke-linecap="round" opacity=".3"/><path d="M4 4l12 12" stroke-width="1.4"/></svg></span>
+              Barely getting any online traffic at all
+            </button>
+
+            <button type="button" class="choice-btn" data-val="I have no idea where my customers come from">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 13v.5"/><path d="M10 11c0-1 .7-1.5 1.5-2.2C12.2 8.1 12.5 7.3 12 6.5c-.5-.9-1.4-1-2-.9C9.2 5.7 8.2 6.5 8 7.5"/></svg></span>
+              I have no idea where my customers come from
+            </button>
+
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step" id="step3">
+          <p class="q-text">Are you currently ranking on Google?</p>
+          <div class="choices-grid single-col" id="googleChoices">
+
+            <button type="button" class="choice-btn" data-val="Yes — I show up on the first page">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M7 10l2 2 4-4"/></svg></span>
+              Yes — I show up on the first page
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Sometimes, but not consistently">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 3v7"/><path d="M10 13v.5"/></svg></span>
+              Sometimes, but not consistently
+            </button>
+
+            <button type="button" class="choice-btn" data-val="No — I'm hard to find online">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M7.5 7.5l5 5M12.5 7.5l-5 5"/></svg></span>
+              No — I'm hard to find online
+            </button>
+
+            <button type="button" class="choice-btn" data-val="Honestly, I have no idea">
+              <span class="choice-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 14v.5"/><path d="M10 11.5c0-1.5 2.5-2 2.5-4a2.5 2.5 0 0 0-5 0"/></svg></span>
+              Honestly, I have no idea
+            </button>
+
+          </div>
+        </div>
+
+        <!-- STEP 4: contact -->
+        <div class="step" id="step4">
+          <p class="q-text">Where should we send your results?</p>
+          <div class="field-wrap">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" placeholder="Jane Smith" autocomplete="name" />
+          </div>
+          <div class="field-wrap">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="you@yourbusiness.com" autocomplete="email" />
+          </div>
+          <div class="nav-row">
+            <button type="submit" class="btn-submit">Submit →</button>
+            <button type="button" class="btn-back" onclick="goStep(3)">← Back</button>
+          </div>
+        </div>
+
+        <!-- THANK YOU -->
+        <div class="step thankyou" id="stepThanks">
+          <div class="ty-icon">
+            <svg viewBox="0 0 24 24"><polyline points="4,12 9,17 20,6"/></svg>
+          </div>
+          <h2>Pick a time that works.</h2>
+          <p>Your free 15-minute AI audit call is one click away.</p>
+          <div class="calendly-inline-widget" data-url="https://calendly.com/aumanaconsulting/30min?hide_event_type_details=1&hide_gdpr_banner=1&background_color=111009&text_color=ffffff&primary_color=ff5c1a" style="min-width:280px;height:630px;"></div>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <script>
+    let currentStep = 1;
+    const TOTAL = 4;
+
+    // Auto-advance groups (step → { containerId, hiddenId, nextStep })
+    const autoGroups = [
+      { step: 1, containerId: 'bizChoices',    hiddenId: 'bizTypeVal', next: 2 },
+      { step: 2, containerId: 'trafficChoices', hiddenId: 'trafficVal', next: 3 },
+      { step: 3, containerId: 'googleChoices',  hiddenId: 'googleVal',  next: 4 },
+    ];
+
+    autoGroups.forEach(({ containerId, hiddenId, next }) => {
+      const container = document.getElementById(containerId);
+      container.querySelectorAll('.choice-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Mark selected
+          container.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          document.getElementById(hiddenId).value = btn.dataset.val;
+          // Auto-advance after brief pause so user sees the selection
+          setTimeout(() => goStep(next), 320);
+        });
+      });
+    });
+
+    function goStep(n) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      const id = n <= TOTAL ? 'step' + n : 'stepThanks';
+      const el = document.getElementById(id);
+      el.classList.add('active');
+      // Re-trigger animation
+      el.style.animation = 'none';
+      el.offsetHeight; // reflow
+      el.style.animation = '';
+      currentStep = n;
+      updateProgress(n);
+    }
+
+    function updateProgress(n) {
+      for (let i = 1; i <= TOTAL; i++) {
+        const el = document.getElementById('p' + i);
+        if (!el) continue;
+        el.className = i < n ? 'done' : i === n ? 'active' : '';
+      }
+      const label = document.getElementById('progressLabel');
+      label.textContent = n <= TOTAL ? `Step ${n} of ${TOTAL}` : 'Done!';
+    }
+
+    // Submit
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nameEl = document.getElementById('name');
+      const emailEl = document.getElementById('email');
+      let ok = true;
+      [nameEl, emailEl].forEach(f => {
+        f.classList.remove('error');
+        if (!f.value.trim()) { f.classList.add('error'); ok = false; }
+      });
+      if (!ok) return;
+
+      const data = new FormData(this);
+      fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(data).toString()
+      }).catch(() => {});
+
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('stepThanks').classList.add('active');
+      for (let i = 1; i <= TOTAL; i++) {
+        const el = document.getElementById('p' + i);
+        if (el) el.className = 'done';
+      }
+      document.getElementById('progressLabel').textContent = 'Done!';
+    });
+
+    function esc(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+  </script>
+  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+</body>
+</html>
